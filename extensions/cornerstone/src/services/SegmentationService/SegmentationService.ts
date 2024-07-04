@@ -1893,17 +1893,39 @@ class SegmentationService extends PubSubService {
   }
 
   private _onSegmentationDataModified = evt => {
+    console.log("Inside _onSegmentationDataModified");
     const { segmentationId } = evt.detail;
 
     const segmentation = this.getSegmentation(segmentationId);
 
-    if (segmentation === undefined) {
+
+    const segmentationVolume = cache.getVolume(segmentationId);
+    console.log("segmentationVolume");
+    console.log(segmentationVolume);
+    console.log("FrameOfReferenceUID");
+    console.log(segmentationVolume['metadata']['FrameOfReferenceUID']);
+    console.log("scalar data");
+    console.log(segmentationVolume['scalarData']);
+
+    for (let i = 0; i < 512*512*3; i++) {
+      if (segmentationVolume['scalarData'][i] !== 0) {
+        segmentationVolume['scalarData'][i] = 0;
+      }
+      else{
+        segmentationVolume['scalarData'][i] = 1;
+      }
+    }
+
+    const segmentation1 = this.getSegmentation(segmentationId);
+
+
+    if (segmentation1 === undefined) {
       // Part of add operation, not update operation, exit early.
       return;
     }
 
     this._broadcastEvent(this.EVENTS.SEGMENTATION_DATA_MODIFIED, {
-      segmentation,
+      segmentation1,
     });
   };
 
