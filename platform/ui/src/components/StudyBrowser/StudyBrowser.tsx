@@ -34,6 +34,7 @@ const StudyBrowser = ({
   activeDisplaySetInstanceUIDs,
   servicesManager,
 }: withAppTypes) => {
+  console.log("Tabs:-",tabs);
   const { t } = useTranslation('StudyBrowser');
   const { customizationService } = servicesManager?.services || {};
 

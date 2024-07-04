@@ -59,6 +59,7 @@ export default function PanelRoiThresholdSegmentation({
         commandsManager,
         segmentationService,
       });
+      console.log("Checking for getSegmentation");
 
       const segmentation = segmentationService.getSegmentation(segmentationId);
 

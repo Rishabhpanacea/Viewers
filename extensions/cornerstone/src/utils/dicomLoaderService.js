@@ -4,6 +4,7 @@ import { api } from 'dicomweb-client';
 import { DICOMWeb, errorHandler } from '@ohif/core';
 
 const getImageId = imageObj => {
+  console.log("dicomLoaderService Inside getImageId");
   if (!imageObj) {
     return;
   }
@@ -12,6 +13,7 @@ const getImageId = imageObj => {
 };
 
 const findImageIdOnStudies = (studies, displaySetInstanceUID) => {
+  console.log("dicomLoaderService Inside findImageIdOnStudies");
   const study = studies.find(study => {
     const displaySet = study.displaySets.some(
       displaySet => displaySet.displaySetInstanceUID === displaySetInstanceUID
@@ -26,6 +28,7 @@ const findImageIdOnStudies = (studies, displaySetInstanceUID) => {
 };
 
 const someInvalidStrings = strings => {
+  console.log("dicomLoaderService Inside someInvalidStrings");
   const stringsArray = Array.isArray(strings) ? strings : [strings];
   const emptyString = string => !string;
   let invalid = stringsArray.some(emptyString);
@@ -33,22 +36,29 @@ const someInvalidStrings = strings => {
 };
 
 const getImageInstance = dataset => {
+  console.log("dicomLoaderService Inside getImageInstance");
+  console.log("dataset",dataset);
+  console.log("dataset.images",dataset.images);
   return dataset && dataset.images && dataset.images[0];
 };
 
 const getNonImageInstance = dataset => {
+  console.log("dicomLoaderService Inside getNonImageInstance");
   return dataset && dataset.instance;
 };
 
 const getImageInstanceId = imageInstance => {
+  console.log("dicomLoaderService Inside getImageInstanceId");
   return getImageId(imageInstance);
 };
 
 const fetchIt = (url, headers = DICOMWeb.getAuthorizationHeader()) => {
+  console.log("dicomLoaderService Inside getImageInstanceId");
   return fetch(url, headers).then(response => response.arrayBuffer());
 };
 
 const cornerstoneRetriever = imageId => {
+  console.log("dicomLoaderService Inside cornerstoneRetriever");
   return imageLoader.loadAndCacheImage(imageId).then(image => {
     return image && image.data && image.data.byteArray.buffer;
   });
@@ -62,6 +72,7 @@ const wadorsRetriever = (
   headers = DICOMWeb.getAuthorizationHeader(),
   errorInterceptor = errorHandler.getHTTPErrorHandler()
 ) => {
+  console.log("dicomLoaderService Inside wadorsRetriever");
   const config = {
     url,
     headers,
@@ -77,6 +88,7 @@ const wadorsRetriever = (
 };
 
 const getImageLoaderType = imageId => {
+  console.log("dicomLoaderService Inside getImageLoaderType");
   const loaderRegExp = /^\w+\:/;
   const loaderType = loaderRegExp.exec(imageId);
 
@@ -92,6 +104,7 @@ const getImageLoaderType = imageId => {
 class DicomLoaderService {
   getLocalData(dataset, studies) {
     // Use referenced imageInstance
+    console.log("dicomLoaderService Inside getLocalData");
     const imageInstance = getImageInstance(dataset);
     const nonImageInstance = getNonImageInstance(dataset);
 
@@ -117,6 +130,7 @@ class DicomLoaderService {
   }
 
   getDataByImageType(dataset) {
+    console.log("dicomLoaderService Inside getDataByImageType");
     const imageInstance = getImageInstance(dataset);
 
     if (imageInstance) {
@@ -169,6 +183,7 @@ class DicomLoaderService {
   }
 
   getDataByDatasetType(dataset) {
+    console.log("dicomLoaderService Inside getDataByDatasetType");
     const {
       StudyInstanceUID,
       SeriesInstanceUID,
@@ -206,6 +221,7 @@ class DicomLoaderService {
   }
 
   findDicomDataPromise(dataset, studies, headers) {
+    console.log("dicomLoaderService Inside findDicomDataPromise");
     dataset.authorizationHeaders = headers;
     const loaderIterator = this.getLoaderIterator(dataset, studies);
     // it returns first valid retriever method.

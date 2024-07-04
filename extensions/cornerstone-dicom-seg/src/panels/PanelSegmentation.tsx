@@ -37,6 +37,7 @@ export default function PanelSegmentation({
   const [segmentations, setSegmentations] = useState(() => segmentationService.getSegmentations());
 
   useEffect(() => {
+    console.log("Finding useEffect10 for Seg");
     // ~~ Subscription
     const added = segmentationService.EVENTS.SEGMENTATION_ADDED;
     const updated = segmentationService.EVENTS.SEGMENTATION_UPDATED;
@@ -62,6 +63,7 @@ export default function PanelSegmentation({
   // temporary measure to not allow add segmentation when the selected viewport
   // is stack viewport
   useEffect(() => {
+    console.log("Finding useEffect11 for Seg");
     const handleActiveViewportChange = viewportId => {
       const displaySetUIDs = viewportGridService.getDisplaySetsUIDsForViewport(
         viewportId || viewportGridService.getActiveViewportId()

@@ -16,9 +16,28 @@ function CornerstoneImageScrollbar({
   const { cineService, cornerstoneViewportService } = servicesManager.services;
 
   const onImageScrollbarChange = (imageIndex, viewportId) => {
+    console.log("Inside onImageScrollbarChange");
     const viewport = cornerstoneViewportService.getCornerstoneViewport(viewportId);
 
+    console.log("viewportID");
+    console.log(viewportId);
+
+    console.log("viewport");
+    console.log(viewport);
+
+    console.log("viewportData");
+    console.log(viewportData);
+
+
     const { isCineEnabled } = cineService.getState();
+    console.log("isCineEnabled");
+    console.log(isCineEnabled);
+
+    console.log("imageSliceData");
+    console.log(imageSliceData);
+
+    console.log("setImageSliceData");
+    console.log(setImageSliceData);
 
     if (isCineEnabled) {
       // on image scrollbar change, stop the CINE if it is playing
@@ -33,6 +52,7 @@ function CornerstoneImageScrollbar({
   };
 
   useEffect(() => {
+    console.log("useEffect1");
     if (!viewportData) {
       return;
     }
@@ -69,11 +89,14 @@ function CornerstoneImageScrollbar({
   }, [viewportId, viewportData]);
 
   useEffect(() => {
+    console.log("useEffect2");
     if (viewportData?.viewportType !== Enums.ViewportType.STACK) {
       return;
     }
 
     const updateStackIndex = event => {
+      console.log("updateStackIndex");
+      console.log(viewportData);
       const { newImageIdIndex } = event.detail;
       // find the index of imageId in the imageIds
       setImageSliceData({
@@ -90,17 +113,20 @@ function CornerstoneImageScrollbar({
   }, [viewportData, element]);
 
   useEffect(() => {
+    console.log("useEffect3");
     if (viewportData?.viewportType !== Enums.ViewportType.ORTHOGRAPHIC) {
       return;
     }
 
     const updateVolumeIndex = event => {
+      console.log("Inside updateVolumeIndex");
       const { imageIndex, numberOfSlices } = event.detail;
       // find the index of imageId in the imageIds
       setImageSliceData({ imageIndex, numberOfSlices });
     };
 
     element.addEventListener(Enums.Events.VOLUME_NEW_IMAGE, updateVolumeIndex);
+    console.log("element.addEventListener");
 
     return () => {
       element.removeEventListener(Enums.Events.VOLUME_NEW_IMAGE, updateVolumeIndex);
@@ -115,6 +141,8 @@ function CornerstoneImageScrollbar({
       value={imageSliceData.imageIndex}
     />
   );
+
+
 }
 
 CornerstoneImageScrollbar.propTypes = {

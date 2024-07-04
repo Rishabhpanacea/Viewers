@@ -523,6 +523,8 @@ function commandsModule({
 
     /** Jumps the active viewport or the specified one to the given slice index */
     jumpToImage: ({ imageIndex, viewport: gridViewport }): void => {
+      console.log("Inside jumpToImage");
+
       // Get current active viewport (return if none active)
       let viewport;
       if (!gridViewport) {

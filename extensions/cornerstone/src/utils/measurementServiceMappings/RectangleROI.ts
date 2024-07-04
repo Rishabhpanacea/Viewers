@@ -13,6 +13,7 @@ const RectangleROI = {
     getValueTypeFromToolType,
     customizationService
   ) => {
+    console.log("Inside RectangleROI");
     const { annotation, viewportId } = csToolsEventDetail;
     const { metadata, data, annotationUID } = annotation;
 
@@ -76,6 +77,7 @@ const RectangleROI = {
 };
 
 function getMappedAnnotations(annotation, displaySetService) {
+  console.log("Inside getMappedAnnotations");
   const { metadata, data } = annotation;
   const { cachedStats } = data;
   const { referencedImageId } = metadata;
@@ -125,6 +127,7 @@ suitable for the report generation (e.g. for the csv report). The report
 returns a list of columns and corresponding values.
 */
 function _getReport(mappedAnnotations, points, FrameOfReferenceUID, customizationService) {
+  console.log("Inside _getReport");
   const columns = [];
   const values = [];
 
@@ -163,6 +166,7 @@ function _getReport(mappedAnnotations, points, FrameOfReferenceUID, customizatio
 }
 
 function getDisplayText(mappedAnnotations, displaySet, customizationService) {
+  console.log("Inside getDisplayText");
   if (!mappedAnnotations || !mappedAnnotations.length) {
     return '';
   }

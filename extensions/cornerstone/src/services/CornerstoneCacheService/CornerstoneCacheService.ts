@@ -262,6 +262,7 @@ class CornerstoneCacheService {
 
     // check inside segmentations if any of them are referencing the displaySets
     // that are about to be displayed
+    console.log("Checking for getSegmentations call");
     const segmentations = segmentationService.getSegmentations();
 
     for (const segmentation of segmentations) {

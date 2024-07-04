@@ -28,6 +28,7 @@ async function updateViewportsForSegmentationRendering({
   displaySet?: any;
   initialSliceIndex?: number;
 }) {
+  console.log("Inside updateViewportsForSegmentationRendering");
   const { cornerstoneViewportService, segmentationService, viewportGridService } =
     servicesManager.services;
 
@@ -146,6 +147,7 @@ function getUpdatedViewportsForSegmentation({
   servicesManager,
   displaySet,
 }: withAppTypes) {
+  console.log("Inside getUpdatedViewportsForSegmentation");
   const { hangingProtocolService, displaySetService, segmentationService, viewportGridService } =
     servicesManager.services;
 

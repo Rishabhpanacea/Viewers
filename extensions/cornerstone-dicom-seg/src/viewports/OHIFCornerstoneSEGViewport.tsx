@@ -9,6 +9,7 @@ import _getStatusComponent from './_getStatusComponent';
 const SEG_TOOLGROUP_BASE_NAME = 'SEGToolGroup';
 
 function OHIFCornerstoneSEGViewport(props: withAppTypes) {
+  console.log("Inside OHIFCornerstoneSEGViewport");
   const {
     children,
     displaySets,
@@ -86,6 +87,7 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
   };
 
   const storePresentationState = useCallback(() => {
+    console.log("Inside storePresentationState");
     viewportGrid?.viewports.forEach(({ viewportId }) => {
       commandsManager.runCommand('storePresentation', {
         viewportId,
@@ -94,6 +96,7 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
   }, [viewportGrid]);
 
   const getCornerstoneViewport = useCallback(() => {
+    console.log("Inside getCornerstoneViewport");
     const { component: Component } = extensionManager.getModuleEntry(
       '@ohif/extension-cornerstone.viewportModule.cornerstone'
     );
@@ -122,7 +125,9 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
 
   const onSegmentChange = useCallback(
     direction => {
+      console.log("Inside onSegmentChange");
       const segmentationId = segDisplaySet.displaySetInstanceUID;
+      console.log("Checking for getSegmentation");
       const segmentation = segmentationService.getSegmentation(segmentationId);
 
       const { segments } = segmentation;
@@ -146,6 +151,7 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
   );
 
   useEffect(() => {
+    console.log("Finding useEffect1 for Seg update");
     if (segIsLoading) {
       return;
     }
@@ -164,6 +170,7 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
   }, [servicesManager, viewportId, segDisplaySet, segIsLoading]);
 
   useEffect(() => {
+    console.log("Finding useEffect2 for Seg update");
     const { unsubscribe } = segmentationService.subscribe(
       segmentationService.EVENTS.SEGMENTATION_LOADING_COMPLETE,
       evt => {
@@ -179,6 +186,7 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
   }, [segDisplaySet]);
 
   useEffect(() => {
+    console.log("Finding useEffect3 for Seg update");
     const { unsubscribe } = segmentationService.subscribe(
       segmentationService.EVENTS.SEGMENT_LOADING_COMPLETE,
       ({ percentComplete, numSegments }) => {
@@ -198,6 +206,7 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
    Cleanup the SEG viewport when the viewport is destroyed
    */
   useEffect(() => {
+    console.log("Finding useEffect4 for Seg update");
     const onDisplaySetsRemovedSubscription = displaySetService.subscribe(
       displaySetService.EVENTS.DISPLAY_SETS_REMOVED,
       ({ displaySetInstanceUIDs }) => {
@@ -217,6 +226,7 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
   }, []);
 
   useEffect(() => {
+    console.log("Finding useEffect5 for Seg update");
     let toolGroup = toolGroupService.getToolGroup(toolGroupId);
 
     if (toolGroup) {
@@ -237,6 +247,7 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
   }, []);
 
   useEffect(() => {
+    console.log("Finding useEffect6 for Seg update");
     setIsHydrated(segDisplaySet.isHydrated);
 
     return () => {
@@ -248,6 +259,7 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
 
   const hydrateSEGDisplaySet = useCallback(
     ({ segDisplaySet, viewportId }) => {
+      console.log("Inside hydrateSEGDisplaySet");
       commandsManager.runCommand('loadSegmentationDisplaySetsForViewport', {
         displaySets: [segDisplaySet],
         viewportId,
@@ -263,6 +275,7 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
     // required if the user has changed the viewport (other viewport than SEG viewport)
     // presentation state (w/l and invert) and then opens the SEG. If we don't store
     // the presentation state, the viewport will be reset to the default presentation
+    console.log("Inside onStatusClick");
     storePresentationState();
     const isHydrated = await hydrateSEGDisplaySet({
       segDisplaySet,
@@ -273,6 +286,7 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
   }, [hydrateSEGDisplaySet, segDisplaySet, storePresentationState, viewportId]);
 
   useEffect(() => {
+    console.log("Finding useEffect7 for Seg update");
     viewportActionCornersService.setComponents([
       {
         viewportId,
@@ -370,6 +384,7 @@ OHIFCornerstoneSEGViewport.propTypes = {
 };
 
 function _getReferencedDisplaySetMetadata(referencedDisplaySet, segDisplaySet) {
+  console.log("Inside  _getReferencedDisplaySetMetadata");
   const { SharedFunctionalGroupsSequence } = segDisplaySet.instance;
 
   const SharedFunctionalGroup = Array.isArray(SharedFunctionalGroupsSequence)

@@ -9,6 +9,7 @@ const SETTING_TYPES = {
 };
 
 function ToolSettings({ options }) {
+  console.log("Inside ToolSettings");
   if (!options) {
     return null;
   }
@@ -42,6 +43,7 @@ function ToolSettings({ options }) {
 }
 
 const renderRangeSetting = option => {
+  console.log("Inside renderRangeSetting");
   return (
     <div
       className="flex items-center"
@@ -65,7 +67,11 @@ const renderRangeSetting = option => {
 };
 
 const renderRadioSetting = option => {
+  console.log("Inside renderRadioSetting");
   const renderButtons = option => {
+    console.log("Inside renderButtons");
+    console.log("options");
+    console.log(option);
     return option.values?.map(({ label, value: optionValue }, index) => (
       <button
         onClick={() => {
@@ -97,6 +103,7 @@ const renderRadioSetting = option => {
 };
 
 const renderDoubleRangeSetting = option => {
+  console.log("Inside renderDoubleRangeSetting");
   return (
     <div
       className="flex w-full items-center"
@@ -118,6 +125,7 @@ const renderDoubleRangeSetting = option => {
 };
 
 const renderCustomSetting = option => {
+  console.log("Inside renderCustomSetting");
   return (
     <div key={option.id}>
       {typeof option.children === 'function' ? option.children() : option.children}

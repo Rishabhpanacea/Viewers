@@ -471,6 +471,8 @@ class MetadataProvider {
   }
 
   getUIDsFromImageID(imageId) {
+    console.log("Inside getUIDsFromImageID");
+    console.log("imageId",imageId);
     if (!imageId) {
       throw new Error('MetadataProvider::Empty imageId');
     }

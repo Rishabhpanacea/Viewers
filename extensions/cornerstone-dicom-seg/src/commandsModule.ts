@@ -13,6 +13,7 @@ import { classes, DicomMetadataStore } from '@ohif/core';
 import vtkImageMarchingSquares from '@kitware/vtk.js/Filters/General/ImageMarchingSquares';
 import vtkDataArray from '@kitware/vtk.js/Common/Core/DataArray';
 import vtkImageData from '@kitware/vtk.js/Common/DataModel/ImageData';
+import axios from 'axios';
 
 import {
   updateViewportsForSegmentationRendering,
@@ -97,6 +98,7 @@ const commandsModule = ({
         servicesManager,
         displaySet,
         loadFn: async () => {
+          console.log("Inside updateViewportsForSegmentationRendering");
           const currentSegmentations = segmentationService.getSegmentations();
           const segmentationId = await segmentationService.createSegmentationForDisplaySet(
             displaySetInstanceUID,
@@ -134,6 +136,7 @@ const commandsModule = ({
      *
      */
     loadSegmentationsForViewport: async ({ segmentations, viewportId }) => {
+      console.log("Inside loadSegmentationsForViewport");
       updateViewportsForSegmentationRendering({
         viewportId,
         servicesManager,
@@ -158,6 +161,8 @@ const commandsModule = ({
             const labelmapVolume = segmentationService.getLabelmapVolume(segmentationId);
             labelmapVolume.scalarData.set(segmentation.scalarData);
           }
+
+
 
           segmentationService.addOrUpdateSegmentation(segmentation);
 
@@ -206,19 +211,30 @@ const commandsModule = ({
      *
      */
     loadSegmentationDisplaySetsForViewport: async ({ viewportId, displaySets }) => {
+      console.log("Inside loadSegmentationDisplaySetsForViewport");
       // Todo: handle adding more than one segmentation
       const displaySet = displaySets[0];
+      // console.log("displaySet");
+      // console.log(displaySet);
+
       const referencedDisplaySet = displaySetService.getDisplaySetByUID(
         displaySet.referencedDisplaySetInstanceUID
       );
+      // console.log("referencedDisplaySet");
+      // console.log(referencedDisplaySet);
       const viewport = cornerstoneViewportService.getCornerstoneViewport(viewportId);
+      // console.log("viewport");
+      // console.log(viewport);
       const initialSliceIndex = viewport.getSliceIndex();
+      // console.log("initialSliceIndex");
+      // console.log(initialSliceIndex);
 
       updateViewportsForSegmentationRendering({
         viewportId,
         servicesManager,
         displaySet,
         loadFn: async () => {
+          console.log("Inside updateViewportsForSegmentationRendering");
           const segDisplaySet = displaySet;
           const suppressEvents = false;
           const serviceFunction =
@@ -249,15 +265,76 @@ const commandsModule = ({
      * @returns Returns the generated segmentation data.
      */
     generateSegmentation: ({ segmentationId, options = {} }) => {
+      console.log("Inside generateSegmentation");
       const segmentation = cornerstoneToolsSegmentation.state.getSegmentation(segmentationId);
+      console.log("segmentation");
+      console.log(segmentation);
 
       const { referencedVolumeId } = segmentation.representationData.LABELMAP;
+      console.log("referencedVolumeId");
+      console.log(referencedVolumeId);
 
       const segmentationVolume = cache.getVolume(segmentationId);
+
+      console.log("segmentationVolume");
+      console.log(segmentationVolume);
       const referencedVolume = cache.getVolume(referencedVolumeId);
+
+      console.log("referencedVolume");
+      console.log(referencedVolume);
       const referencedImages = referencedVolume.getCornerstoneImages();
 
+      console.log("referencedImages");
+      console.log(referencedImages);
+
       const labelmapObj = generateLabelMaps2DFrom3D(segmentationVolume);
+
+      // console.log("labelmapObj");
+      // console.log(labelmapObj);
+
+
+      // console.log("labelmapObj['labelmaps2D'][1]['pixelData']");
+      // console.log(labelmapObj['labelmaps2D'][1]['pixelData']);
+
+      // let start = -1;
+      // let end = -1;
+      
+      // for (let i = 0; i < 512*512; i++) {
+      //   if (start === -1 && labelmapObj['labelmaps2D'][1]['pixelData'][i] !== 0) {
+      //     start = i;
+      //   }
+      //   else if(labelmapObj['labelmaps2D'][1]['pixelData'][i] !== 0){
+      //     end = i;
+      //   }
+      // }
+      
+      // console.log(`Start: ${start}, End: ${end}`);
+
+
+
+      // const apiUrl = 'http://127.0.0.1:8000/segment/';
+      // // const requestData = { data: measurementData[0]['points']};  // Adjust this object as per your actual data structure
+      // const requestData= {data:[[start/512,start%512],[end/512,end%512]]};
+      // axios.post(apiUrl, requestData, {
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      // })
+
+      // .then(response => {
+      //   console.log('Response from API:', response.data);
+      //   const segmentationResult = response.data['segmentation_result'];
+      //   const uint8Array = new Uint8Array(segmentationResult);
+      //   labelmapObj['labelmaps2D'][1]['pixelData'] = uint8Array;
+
+      //   // localStorage.setItem('myArray3', JSON.stringify(Array.from(uint8Array)));
+      //   // Handle response as needed
+      // })
+
+      // .catch(error => {
+      //     console.error('Error from API:', error);
+      //     // Handle error
+      // });
 
       // Generate fake metadata as an example
       labelmapObj.metadata = [];
@@ -315,10 +392,15 @@ const commandsModule = ({
      *
      */
     downloadSegmentation: ({ segmentationId }) => {
+      // storeSegmentation(segmentationId)
+      console.log("Inside downloadSegmentation");
       const segmentationInOHIF = segmentationService.getSegmentation(segmentationId);
+      console.log("segmentationInOHIF",segmentationInOHIF);
       const generatedSegmentation = actions.generateSegmentation({
         segmentationId,
       });
+      console.log("generatedSegmentation",generatedSegmentation);
+      console.log("generatedSegmentation.dataset",generatedSegmentation.dataset);
 
       downloadDICOMData(generatedSegmentation.dataset, `${segmentationInOHIF.label}`);
     },
@@ -335,6 +417,7 @@ const commandsModule = ({
      * otherwise throws an error.
      */
     storeSegmentation: async ({ segmentationId, dataSource }) => {
+      console.log("Inside storeSegmentation");
       const promptResult = await createReportDialogPrompt(uiDialogService, {
         extensionManager,
       });

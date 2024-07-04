@@ -36,6 +36,7 @@ const STACK = 'stack';
 let cacheJumpToMeasurementEvent;
 
 function areEqual(prevProps, nextProps) {
+  console.log("Inside areEqual");
   if (nextProps.needsRerendering) {
     return false;
   }
@@ -297,6 +298,7 @@ const OHIFCornerstoneViewport = React.memo((props: withAppTypes) => {
     }
 
     const loadViewportData = async () => {
+      console.log("Inside loadViewportData");
       const viewportData = await cornerstoneCacheService.createViewportData(
         displaySets,
         viewportOptions,
@@ -561,6 +563,7 @@ function _jumpToMeasurement(
   viewportGridService,
   cornerstoneViewportService
 ) {
+  console.log("Inside _jumpToMeasurement");
   const targetElement = targetElementRef.current;
   const { displaySetInstanceUID, SOPInstanceUID, frameNumber } = measurement;
 

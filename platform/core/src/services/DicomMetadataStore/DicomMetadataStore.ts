@@ -50,15 +50,20 @@ const _model = {
 };
 
 function _getStudyInstanceUIDs() {
+  console.log("DicomMetadataStore Inside _getStudyInstanceUIDs");
+  console.log("aStudy",_model);
   return _model.studies.map(aStudy => aStudy.StudyInstanceUID);
 }
 
 function _getStudy(StudyInstanceUID) {
+  console.log("DicomMetadataStore Inside _getStudy");
   return _model.studies.find(aStudy => aStudy.StudyInstanceUID === StudyInstanceUID);
 }
 
 function _getSeries(StudyInstanceUID, SeriesInstanceUID) {
+  console.log("DicomMetadataStore Inside_getSeries");
   const study = _getStudy(StudyInstanceUID);
+  console.log("_getSeries study",study);
 
   if (!study) {
     return;
@@ -68,7 +73,10 @@ function _getSeries(StudyInstanceUID, SeriesInstanceUID) {
 }
 
 function _getInstance(StudyInstanceUID, SeriesInstanceUID, SOPInstanceUID) {
+  console.log("DicomMetadataStore Inside _getInstance");
   const series = _getSeries(StudyInstanceUID, SeriesInstanceUID);
+  console.log("series",series);
+  console.log("SOPInstanceUID",SOPInstanceUID);
 
   if (!series) {
     return;
@@ -78,6 +86,7 @@ function _getInstance(StudyInstanceUID, SeriesInstanceUID, SOPInstanceUID) {
 }
 
 function _getInstanceByImageId(imageId) {
+  console.log("DicomMetadataStore Inside _getInstanceByImageId");
   for (const study of _model.studies) {
     for (const series of study.series) {
       for (const instance of series.instances) {
@@ -97,6 +106,7 @@ function _getInstanceByImageId(imageId) {
  * @returns
  */
 function _updateMetadataForSeries(StudyInstanceUID, SeriesInstanceUID, metadata) {
+  console.log("DicomMetadataStore Inside _updateMetadataForSeries");
   const study = _getStudy(StudyInstanceUID);
 
   if (!study) {
@@ -164,6 +174,7 @@ const BaseImplementation = {
     study.addInstanceToSeries(naturalizedDataset);
   },
   addInstances(instances, madeInClient = false) {
+    
     const { StudyInstanceUID, SeriesInstanceUID } = instances[0];
 
     let study = _model.studies.find(study => study.StudyInstanceUID === StudyInstanceUID);
@@ -187,6 +198,7 @@ const BaseImplementation = {
     });
   },
   updateSeriesMetadata(seriesMetadata) {
+    console.log("DicomMetadataStore Inside updateSeriesMetadata");
     const { StudyInstanceUID, SeriesInstanceUID } = seriesMetadata;
     const series = _getSeries(StudyInstanceUID, SeriesInstanceUID);
     if (!series) {
@@ -199,6 +211,7 @@ const BaseImplementation = {
     }
   },
   addSeriesMetadata(seriesSummaryMetadata, madeInClient = false) {
+    console.log("DicomMetadataStore Inside addSeriesMetadata");
     if (!seriesSummaryMetadata || !seriesSummaryMetadata.length || !seriesSummaryMetadata[0]) {
       return;
     }

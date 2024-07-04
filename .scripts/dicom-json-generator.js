@@ -182,7 +182,7 @@ function commonMetaData(instance) {
     SOPInstanceUID: instance.SOPInstanceUID,
     SeriesInstanceUID: instance.SeriesInstanceUID,
     StudyInstanceUID: instance.StudyInstanceUID,
-    WindowCenter: instance.WindowCenter,
+    WindowCenter: instance.WindowCenter,  // Important WindowCenter
     WindowWidth: instance.WindowWidth,
     RescaleIntercept: instance.RescaleIntercept,
     RescaleSlope: instance.RescaleSlope,

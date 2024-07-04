@@ -20,6 +20,13 @@ import { Types as ohifTypes } from '@ohif/core';
 import { easeInOutBell, reverseEaseInOutBell } from '../../utils/transitions';
 import { Segment, Segmentation, SegmentationConfig } from './SegmentationServiceTypes';
 import { mapROIContoursToRTStructData } from './RTSTRUCT/mapROIContoursToRTStructData';
+// import getUIDsFromImageID from './../../../../../../Viewers/platform/core/src/services/DicomMetadataStore'
+import axios from 'axios';
+
+// import generateLabelMaps2DFrom3D from "../../../node_modules/@corner"
+
+import { utils, classes, DisplaySetService, Types } from '@ohif/core';
+const { ImageSet, MetadataProvider: metadataProvider } = classes;
 
 const LABELMAP = csToolsEnums.SegmentationRepresentations.Labelmap;
 const CONTOUR = csToolsEnums.SegmentationRepresentations.Contour;
@@ -128,6 +135,7 @@ class SegmentationService extends PubSubService {
     }
 
     const toolGroupId = config.toolGroupId ?? this._getApplicableToolGroupId();
+    console.log("Checking for getSegmentation1");
 
     const { segmentationRepresentationUID, segmentation } = this._getSegmentationInfo(
       segmentationId,
@@ -207,6 +215,7 @@ class SegmentationService extends PubSubService {
   }
 
   public removeSegment(segmentationId: string, segmentIndex: number): void {
+    console.log("Checking for getSegmentation2");
     const segmentation = this.getSegmentation(segmentationId);
 
     if (segmentation === undefined) {
@@ -299,6 +308,7 @@ class SegmentationService extends PubSubService {
    * @param segmentIndex - The index of the segment to toggle.
    */
   public toggleSegmentLocked(segmentationId: string, segmentIndex: number): void {
+    console.log("Checking for getSegmentation3");
     const segmentation = this.getSegmentation(segmentationId);
     const segment = this._getSegmentInfo(segmentation, segmentIndex);
     const isLocked = !segment.isLocked;
@@ -320,6 +330,7 @@ class SegmentationService extends PubSubService {
     rgbaColor: cstTypes.Color,
     toolGroupId?: string
   ): void => {
+    console.log("Checking for getSegmentation4");
     const segmentation = this.getSegmentation(segmentationId);
 
     if (segmentation === undefined) {
@@ -381,6 +392,7 @@ class SegmentationService extends PubSubService {
    * @return Array of segmentations
    */
   public getSegmentations(filterNonHydratedSegmentations = true): Segmentation[] {
+    console.log("Inside getSegmentations public");
     const segmentations = this._getSegmentations();
 
     return (
@@ -392,17 +404,20 @@ class SegmentationService extends PubSubService {
   }
 
   private _getSegmentations(): Segmentation[] {
+    console.log("Inside _getSegmentations private");
     const segmentations = this.arrayOfObjects(this.segmentations);
     return segmentations && segmentations.map(m => this.segmentations[Object.keys(m)[0]]);
   }
 
   public getActiveSegmentation(): Segmentation {
+    console.log("Inside getActiveSegmentation");
     const segmentations = this.getSegmentations();
 
     return segmentations.find(segmentation => segmentation.isActive);
   }
 
   public getActiveSegment() {
+    console.log("Inside getActiveSegment");
     const activeSegmentation = this.getActiveSegmentation();
     const { activeSegmentIndex, segments } = activeSegmentation;
 
@@ -420,6 +435,11 @@ class SegmentationService extends PubSubService {
    * @return segmentation instance
    */
   public getSegmentation(segmentationId: string): Segmentation {
+    console.log("Inside getSegmentation");
+    console.log(this.segmentations[segmentationId]);
+    // const segmentationVolume = cache.getVolume(segmentationId);
+    // console.log( segmentationVolume);
+    // const labelmapObj = generateLabelMaps2DFrom3D(segmentationVolume);
     return this.segmentations[segmentationId];
   }
 
@@ -428,6 +448,7 @@ class SegmentationService extends PubSubService {
     suppressEvents = false,
     notYetUpdatedAtSource = false
   ): string {
+    console.log("Inside addOrUpdateSegmentation");
     const { id: segmentationId } = segmentation;
     let cachedSegmentation = this.segmentations[segmentationId];
     if (cachedSegmentation) {
@@ -515,6 +536,7 @@ class SegmentationService extends PubSubService {
     };
 
     const labelmap = this.getLabelmapVolume(segmentationId);
+    console.log("Checking for getSegmentation5");
     const cachedSegmentation = this.getSegmentation(segmentationId);
     if (labelmap && cachedSegmentation) {
       // if the labelmap with the same segmentationId already exists, we can
@@ -655,6 +677,7 @@ class SegmentationService extends PubSubService {
         },
       },
     };
+    console.log("Checking for getSegmentation6");
 
     const cachedSegmentation = this.getSegmentation(segmentationId);
 
@@ -761,6 +784,7 @@ class SegmentationService extends PubSubService {
     segmentationId: string,
     segmentIndex?: number
   ): Map<number, { x: number; y: number; z: number; world: number[] }> => {
+    console.log("Checking for getSegmentation7");
     const segmentation = this.getSegmentation(segmentationId);
     const volume = this.getLabelmapVolume(segmentationId);
     const { dimensions, imageData } = volume;
@@ -819,6 +843,7 @@ class SegmentationService extends PubSubService {
     segmentationId: string,
     centroids: Map<number, { image: number[]; world?: number[] }>
   ): void => {
+    console.log("Checking for getSegmentation8");
     const segmentation = this.getSegmentation(segmentationId);
     const imageData = this.getLabelmapVolume(segmentationId).imageData; // Assuming this method returns imageData
 
@@ -857,6 +882,7 @@ class SegmentationService extends PubSubService {
     highlightHideOthers = false,
     highlightFunctionType = 'ease-in-out' // todo: make animation functions configurable from outside
   ): void {
+    console.log("Inside jumpToSegmentCenter");
     const { toolGroupService } = this.servicesManager.services;
     const center = this._getSegmentCenter(segmentationId, segmentIndex);
 
@@ -917,9 +943,11 @@ class SegmentationService extends PubSubService {
     hideOthers = true,
     highlightFunctionType = 'ease-in-out'
   ): void {
+    console.log("Inside  highlightSegment");
     if (this.highlightIntervalId) {
       clearInterval(this.highlightIntervalId);
     }
+    console.log("Checking for getSegmentation9");
 
     const segmentation = this.getSegmentation(segmentationId);
     toolGroupId = toolGroupId ?? this._getApplicableToolGroupId();
@@ -956,6 +984,7 @@ class SegmentationService extends PubSubService {
       label: string;
     }
   ): Promise<string> => {
+    console.log("Inside  createSegmentationForDisplaySet");
     const { displaySetService } = this.servicesManager.services;
 
     const displaySet = displaySetService.getDisplaySetByUID(displaySetInstanceUID);
@@ -1020,6 +1049,8 @@ class SegmentationService extends PubSubService {
     representationType = csToolsEnums.SegmentationRepresentations.Labelmap,
     suppressEvents = false
   ): Promise<void> => {
+    console.log("Inside  addSegmentationRepresentationToToolGroup");
+    console.log("Checking for getSegmentation10");
     const segmentation = this.getSegmentation(segmentationId);
 
     toolGroupId = toolGroupId || this._getApplicableToolGroupId();
@@ -1097,6 +1128,7 @@ class SegmentationService extends PubSubService {
     rgbaColor,
     toolGroupId?: string
   ) => {
+    console.log("Checking for getSegmentation11");
     const segmentation = this.getSegmentation(segmentationId);
 
     if (segmentation === undefined) {
@@ -1124,11 +1156,14 @@ class SegmentationService extends PubSubService {
   };
 
   public getToolGroupIdsWithSegmentation = (segmentationId: string): string[] => {
+    console.log("Inside  getToolGroupIdsWithSegmentation");
     const toolGroupIds = cstSegmentation.state.getToolGroupIdsWithSegmentation(segmentationId);
     return toolGroupIds;
   };
 
   public hydrateSegmentation = (segmentationId: string, suppressEvents = false): void => {
+    console.log("Inside  hydrateSegmentation");
+    console.log("Checking for getSegmentation12");
     const segmentation = this.getSegmentation(segmentationId);
 
     if (!segmentation) {
@@ -1147,6 +1182,7 @@ class SegmentationService extends PubSubService {
   };
 
   private _setDisplaySetIsHydrated(displaySetUID: string, isHydrated: boolean): void {
+    console.log("Inside  _setDisplaySetIsHydrated");
     const { displaySetService } = this.servicesManager.services;
     const displaySet = displaySetService.getDisplaySetByUID(displaySetUID);
 
@@ -1274,6 +1310,7 @@ class SegmentationService extends PubSubService {
     toolGroupId: string,
     segmentationRepresentationUIDsIds?: string[]
   ): void {
+    console.log("Inside removeSegmentationRepresentationFromToolGroup");
     const uids = segmentationRepresentationUIDsIds || [];
     if (!uids.length) {
       const representations = cstSegmentation.state.getSegmentationRepresentations(toolGroupId);
@@ -1294,6 +1331,7 @@ class SegmentationService extends PubSubService {
    * @param {string} segmentationId The segmentation id
    */
   public remove(segmentationId: string): void {
+    console.log("Inside remove");
     const segmentation = this.segmentations[segmentationId];
     const wasActive = segmentation.isActive;
 
@@ -1337,6 +1375,7 @@ class SegmentationService extends PubSubService {
   }
 
   public getConfiguration = (toolGroupId?: string): SegmentationConfig => {
+    console.log("Inside getConfiguration");
     toolGroupId = toolGroupId ?? this._getApplicableToolGroupId();
 
     const brushSize = 1;
@@ -1461,6 +1500,7 @@ class SegmentationService extends PubSubService {
     label: string,
     suppressEvents = false
   ) {
+    console.log("Checking for getSegmentation13");
     const segmentation = this.getSegmentation(segmentationId);
 
     if (segmentation === undefined) {
@@ -1531,6 +1571,7 @@ class SegmentationService extends PubSubService {
     suppressEvents = false
   ) {
     const segmentations = this._getSegmentations();
+    console.log("Checking for getSegmentation14");
     const targetSegmentation = this.getSegmentation(segmentationId);
 
     if (targetSegmentation === undefined) {
@@ -1574,6 +1615,7 @@ class SegmentationService extends PubSubService {
   };
 
   private _setActiveSegment(segmentationId: string, segmentIndex: number, suppressEvents = false) {
+    console.log("Checking for getSegmentation15");
     const segmentation = this.getSegmentation(segmentationId);
 
     if (segmentation === undefined) {
@@ -1616,6 +1658,7 @@ class SegmentationService extends PubSubService {
     toolGroupId?: string,
     suppressEvents = false
   ) => {
+    console.log("Checking for getSegmentation16");
     const segmentation = this.getSegmentation(segmentationId);
 
     if (segmentation === undefined) {
@@ -1663,6 +1706,7 @@ class SegmentationService extends PubSubService {
   };
 
   private _getSegmentCenter(segmentationId, segmentIndex) {
+    console.log("Checking for getSegmentation17");
     const segmentation = this.getSegmentation(segmentationId);
 
     if (!segmentation) {
@@ -1692,6 +1736,7 @@ class SegmentationService extends PubSubService {
     isLocked: boolean,
     suppressEvents = false
   ) {
+    console.log("Checking for getSegmentation18");
     const segmentation = this.getSegmentation(segmentationId);
 
     if (segmentation === undefined) {
@@ -1769,6 +1814,7 @@ class SegmentationService extends PubSubService {
     toolGroupId?: string,
     suppressEvents = false
   ) => {
+    console.log("Checking for getSegmentation19");
     const segmentation = this.getSegmentation(segmentationId);
 
     if (segmentation === undefined) {
@@ -1821,6 +1867,7 @@ class SegmentationService extends PubSubService {
     segmentLabel: string,
     suppressEvents = false
   ) {
+    console.log("Checking for getSegmentation20");
     const segmentation = this.getSegmentation(segmentationId);
 
     if (segmentation === undefined) {
@@ -1881,6 +1928,7 @@ class SegmentationService extends PubSubService {
 
   private _initSegmentationService() {
     // Connect Segmentation Service to Cornerstone3D.
+    console.log("_initSegmentationService finding bounding box");
     eventTarget.addEventListener(
       csToolsEnums.Events.SEGMENTATION_MODIFIED,
       this._onSegmentationModifiedFromSource
@@ -1893,14 +1941,214 @@ class SegmentationService extends PubSubService {
   }
 
   private _onSegmentationDataModified = evt => {
+    // console.log(window.services['CornerstoneViewportService']);
+    console.log("Inside  _onSegmentationDataModified");
+    const cornerstoneViewportService = window.services.CornerstoneViewportService;
+    console.log("cornerstoneViewportService",cornerstoneViewportService);
+    const viewport = cornerstoneViewportService.getCornerstoneViewport('default');
+    console.log("viewport",viewport);
+    const imageId = viewport.getCurrentImageId();
+    console.log("ImageID",imageId);
+    const { SOPInstanceUID, frameNumber } = metadataProvider.getUIDsFromImageID(imageId);
+
+    console.log("Sop",SOPInstanceUID);
+    console.log("frameNumber",frameNumber);
+
+    console.log("evt");
+    console.log(evt);
     const { segmentationId } = evt.detail;
+    console.log("Checking for getSegmentation21");
 
     const segmentation = this.getSegmentation(segmentationId);
 
+    const segmentationVolume = cache.getVolume(segmentationId);
+    console.log("segmentationVolume");
+    console.log(segmentationVolume);
+    console.log("FrameOfReferenceUID");
+    console.log(segmentationVolume['metadata']['FrameOfReferenceUID']);
+    console.log("scalar data");
+    console.log(segmentationVolume['scalarData']);
+
+    let start = -1;
+    let end = -1;
+    
+    for (let i = 512*512; i < 512*512*2; i++) {
+      if (start === -1 && segmentationVolume['scalarData'][i] !== 0) {
+        start = i;
+      }
+      else if(segmentationVolume['scalarData'][i] !== 0){
+        end = i;
+      }
+    }
+    
+    console.log(`Start: ${start}, End: ${end}`);
+
+    const userInput = prompt("want seg?:");
+
+    if (userInput === "yes" && start !== -1 && end !== -1) {
+      console.log("yes");
+
+      // START
+
+
+      // const apiUrl = 'http://127.0.0.1:8000/segment/';
+      // // const requestData = { data: measurementData[0]['points']};  // Adjust this object as per your actual data structure
+      // const requestData = {
+      //   data: {
+      //     Seg: [[Math.floor(start / 512) - 512 * 1, start % 512], [Math.floor(end / 512) - 512 * 1, end % 512]],
+      //     url: "C:\\Users\\Rishabh\\Documents\\MedSam\\MedSAM\\assets\\CT000002.dcm.png"
+      //   }
+      // };
+      //  // url: "C:\Users\Rishabh\Documents\MedSam\MedSAM\assets\CT000002.dcm.png"
+
+
+
+
+      // // const requestData= {data:[[start/512-512*1,start%512],[end/512-512*1,end%512]]};
+
+      // axios.post(apiUrl, requestData, {
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      // })
+
+      // .then(response => {
+      //   console.log('Response from API:', response.data);
+      //   const width1 = 512;
+      //   const height1 = 512;
+      //   const size1 = width1 * height1;
+      //   const uint8Array_1 = new Uint8Array(size1);
+
+      //   const segmentationResult = response.data['segmentation_result'];
+      //   const uint8Array_2 = new Uint8Array(segmentationResult);
+
+      //   const new_data = new Uint8Array(uint8Array_1.length + uint8Array_2.length + uint8Array_1.length);
+      //   new_data.set(uint8Array_1, 0);
+      //   new_data.set(uint8Array_2, uint8Array_1.length);
+      //   new_data.set(uint8Array_1, uint8Array_1.length + uint8Array_2.length);
+      //   console.log("new_data");
+      //   console.log(new_data);
+      //   segmentationVolume['scalarData'] = new_data;
+
+      //   END
+
+
+
+      // const apiUrl = 'http://127.0.0.1:8000/segment/';
+      // const requestData = {
+      //   data: {
+      //     Seg: [[Math.floor(start / 512) - 512 * 1, start % 512], [Math.floor(end / 512) - 512 * 1, end % 512]],
+      //     SOP: SOPInstanceUID
+      //   }
+      // };
+
+      // // Arbitary Image shape issue
+      
+      // // Note: Adjust the url path if necessary
+      // axios.post(apiUrl, requestData, {
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      // })
+      // .then(response => {
+      //   console.log('Response from API:', response.data);
+      //   const width1 = 512;
+      //   const height1 = 512;
+      //   const size1 = width1 * height1;
+      //   const uint8Array_1 = new Uint8Array(size1);
+      
+      //   const segmentationResult = response.data['segmentation_result'];
+      //   const uint8Array_2 = new Uint8Array(segmentationResult);
+      
+      //   const new_data = new Uint8Array(uint8Array_1.length + uint8Array_2.length + uint8Array_1.length);
+      //   new_data.set(uint8Array_1, 0);
+      //   new_data.set(uint8Array_2, uint8Array_1.length);
+      //   new_data.set(uint8Array_1, uint8Array_1.length + uint8Array_2.length);
+      //   console.log("new_data");
+      //   console.log(new_data);
+      //   segmentationVolume['scalarData'] = new_data;
+      // })
+
+      // .catch(error => {
+      //     console.error('Error from API:', error);
+      //     // Handle error
+      // });
+
+      window.cornerstone.imageLoader.loadImage(imageId).then(image => {
+        // Access the pixel data
+        const pixelData = image.getPixelData();
+        console.log("ghhelppp", pixelData);
+
+        // Optional: Access other properties
+        console.log(`Columns: ${image.columns}`);
+        console.log(`Rows: ${image.rows}`);
+        console.log(`Bits Allocated: ${image.bitsAllocated}`);
+        console.log(`Modality: ${image.data.string('x00080060')}`);
+  
+  
+        const imageDataToSend = {
+          pixelData: pixelData
+        };
+
+        const apiUrl = 'http://127.0.0.1:8000/predict/';
+        const requestData = {
+          pixelData: Array.from(pixelData),  // Example pixel data
+          segmentRequest: {
+            data: {
+              Seg: [[Math.floor(start / 512) - 512 * 1, start % 512], [Math.floor(end / 512) - 512 * 1, end % 512]],
+              SOP: SOPInstanceUID
+            }
+          }
+        };
+        axios.post(apiUrl, requestData, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then(response => {
+          console.log('Response from API:', response.data);
+          // Assuming you have width and height defined
+          const width1 = 512;
+          const height1 = 512;
+          const size1 = width1 * height1;
+          // Assuming segmentation_result is a flattened array from the API response
+          const segmentationResult = response.data['segmentation_result'];
+          // Convert segmentationResult to Uint8Array
+          const uint8Array_2 = new Uint8Array(segmentationResult);
+          // Create a new Uint8Array for the combined data
+          const new_data = new Uint8Array(size1 * 2);
+          // Assuming segmentationVolume['scalarData'] is your target array
+          segmentationVolume['scalarData'].set(new_data);
+        })
+        .catch(error => {
+          console.error('Error from API:', error);
+          // Handle error
+      });
+  
+        // axios.post('http://127.0.0.1:8000/api/receive-pixel-data', {
+        //   pixelData: Array.from(pixelData)  // Convert Float32Array to regular array for JSON
+        // }, {
+        //   headers: {
+        //     'Content-Type': 'application/json'
+        //   }
+        // })
+        // .then(response => {
+        //   console.log('Response from server:', response.data);
+        // })
+        // .catch(error => {
+        //   console.error('Error sending data to server:', error);
+        // });
+        
+      }).catch(error => {
+        console.error('Error loading image:', error);
+      });
+
+    }
     if (segmentation === undefined) {
       // Part of add operation, not update operation, exit early.
       return;
     }
+    console.log("Line 2027",segmentationVolume);
 
     this._broadcastEvent(this.EVENTS.SEGMENTATION_DATA_MODIFIED, {
       segmentation,
@@ -1908,6 +2156,8 @@ class SegmentationService extends PubSubService {
   };
 
   private _onSegmentationModifiedFromSource = evt => {
+    console.log("Inside _onSegmentationModifiedFromSource");
+
     const { segmentationId } = evt.detail;
 
     const segmentation = this.segmentations[segmentationId];
@@ -1916,6 +2166,7 @@ class SegmentationService extends PubSubService {
       // Part of add operation, not update operation, exit early.
       return;
     }
+    console.log("Checking for getSegmentation22");
 
     const segmentationState = cstSegmentation.state.getSegmentation(segmentationId);
 
@@ -1958,6 +2209,7 @@ class SegmentationService extends PubSubService {
   };
 
   private _getSegmentationInfo(segmentationId: string, toolGroupId: string) {
+    console.log("Checking for getSegmentation23");
     const segmentation = this.getSegmentation(segmentationId);
 
     if (segmentation === undefined) {
@@ -1981,6 +2233,7 @@ class SegmentationService extends PubSubService {
     // TODO: This should be from the configuration
     const removeFromCache = true;
     const segmentationState = cstSegmentation.state;
+    console.log("Checking for getSegmentation24");
     const sourceSegState = segmentationState.getSegmentation(segmentationId);
     const updatedToolGroupIds: Set<string> = new Set();
 
@@ -2025,6 +2278,7 @@ class SegmentationService extends PubSubService {
       return;
     }
     const segmentationState = cstSegmentation.state;
+    console.log("Checking for getSegmentation25");
     const sourceSegmentation = segmentationState.getSegmentation(segmentationId);
     const segmentation = this.segmentations[segmentationId];
     const { label, cachedStats } = segmentation;

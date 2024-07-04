@@ -128,6 +128,7 @@ function OHIFCornerstoneRTViewport(props: withAppTypes) {
   const onSegmentChange = useCallback(
     direction => {
       const segmentationId = rtDisplaySet.displaySetInstanceUID;
+      console.log("Checking for getSegmentation");
       const segmentation = segmentationService.getSegmentation(segmentationId);
 
       const { segments } = segmentation;

@@ -30,6 +30,12 @@ function SegmentationDropDownRow({
   if (!activeSegmentation) {
     return null;
   }
+  const handleNewButtonClick1 = () => {
+    // console.log('Delete Segmentaion button clicked');
+    console.log("Clicked on handleNewButtonClick1");
+    console.log(activeSegmentation.id);
+    storeSegmentation(activeSegmentation.id);
+  };
 
   return (
     <div className="group mx-0.5 mt-[8px] flex items-center pb-[10px]">
@@ -123,6 +129,12 @@ function SegmentationDropDownRow({
         />
       )}
       <div className="flex items-center">
+      <button
+          className="hover:bg-secondary-dark bg-primary mr-1 grid h-[28px] w-[15px] cursor-pointer place-items-center rounded-[4px] text-white"
+          onClick={handleNewButtonClick1}
+        >
+          click here
+        </button>
         <Tooltip
           position="bottom-right"
           content={

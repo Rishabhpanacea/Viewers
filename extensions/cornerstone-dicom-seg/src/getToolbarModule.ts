@@ -8,7 +8,19 @@ export function getToolbarModule({ servicesManager }: withAppTypes) {
         // forcing the button to have black background since initially
         // it is designed for the toolbox not the toolbar on top
         // we should then branch the buttonSectionId to have different styles
+        console.log("Checking for getSegmentation");
+        console.log("viewportId");
+        console.log(viewportId);
+        console.log("button");
+        console.log(button);
+        console.log("toolNames");
+        console.log(toolNames);
+        console.log("disabledText");
+        console.log(disabledText);
         const segmentations = segmentationService.getSegmentations();
+        console.log("segmentations");
+        console.log(segmentations);
+
         if (!segmentations?.length) {
           return {
             disabled: true,
@@ -18,6 +30,8 @@ export function getToolbarModule({ servicesManager }: withAppTypes) {
         }
 
         const toolGroup = toolGroupService.getToolGroupForViewport(viewportId);
+        console.log("toolGroup");
+        console.log(toolGroup);
 
         if (!toolGroup) {
           return {
@@ -28,6 +42,8 @@ export function getToolbarModule({ servicesManager }: withAppTypes) {
         }
 
         const toolName = toolbarService.getToolNameForButton(button);
+        console.log("toolName");
+        console.log(toolName);
 
         if (!toolGroup.hasTool(toolName) && !toolNames) {
           return {
@@ -40,6 +56,10 @@ export function getToolbarModule({ servicesManager }: withAppTypes) {
         const isPrimaryActive = toolNames
           ? toolNames.includes(toolGroup.getActivePrimaryMouseButtonTool())
           : toolGroup.getActivePrimaryMouseButtonTool() === toolName;
+
+        console.log("isPrimaryActive");
+        console.log(isPrimaryActive);
+
 
         return {
           disabled: false,
