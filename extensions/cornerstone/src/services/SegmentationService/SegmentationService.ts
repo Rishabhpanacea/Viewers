@@ -2144,6 +2144,8 @@ class SegmentationService extends PubSubService {
       });
 
     }
+    // const segmentation = this.getSegmentation(segmentationId);
+
     if (segmentation === undefined) {
       // Part of add operation, not update operation, exit early.
       return;
