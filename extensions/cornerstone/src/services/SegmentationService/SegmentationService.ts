@@ -1,4 +1,7 @@
 import { Types as OhifTypes, PubSubService } from '@ohif/core';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { LoadingIndicatorTotalPercent, useViewportGrid, ViewportActionArrows } from '@ohif/ui';
+import PropTypes from 'prop-types';
 import {
   cache,
   Enums as csEnums,
@@ -20,6 +23,12 @@ import { Types as ohifTypes } from '@ohif/core';
 import { easeInOutBell, reverseEaseInOutBell } from '../../utils/transitions';
 import { Segment, Segmentation, SegmentationConfig } from './SegmentationServiceTypes';
 import { mapROIContoursToRTStructData } from './RTSTRUCT/mapROIContoursToRTStructData';
+import promptHydrateSEG from '../../../../cornerstone-dicom-seg/src/utils/promptHydrateSEG';
+
+import axios from 'axios';
+
+import { utils, classes, DisplaySetService, Types } from '@ohif/core';
+const { ImageSet, MetadataProvider: metadataProvider } = classes;
 
 const LABELMAP = csToolsEnums.SegmentationRepresentations.Labelmap;
 const CONTOUR = csToolsEnums.SegmentationRepresentations.Contour;
@@ -41,6 +50,15 @@ const EVENTS = {
   SEGMENTATION_LOADING_COMPLETE: 'event::segmentation_loading_complete',
 };
 
+// const {
+//   children,
+//   displaySets,
+//   viewportOptions,
+//   servicesManager,
+//   extensionManager,
+//   commandsManager,
+// } = props;
+
 const VALUE_TYPES = {};
 
 const SEGMENT_CONSTANT = {
@@ -51,7 +69,88 @@ const SEGMENT_CONSTANT = {
 
 const VOLUME_LOADER_SCHEME = 'cornerstoneStreamingImageVolume';
 
+// const [viewportGrid, viewportGridService] = useViewportGrid();
+
+// const [isHydrated, setIsHydrated] = useState(segDisplaySet.isHydrated);
+
+// const storePresentationState = useCallback(() => {
+//   viewportGrid?.viewports.forEach(({ viewportId }) => {
+//     commandsManager.runCommand('storePresentation', {
+//       viewportId,
+//     });
+//   });
+// }, [viewportGrid]);
+
+function prr(props: withAppTypes) {
+  console.log("inside prr");
+  const {
+    children,
+    displaySets,
+    viewportOptions,
+    servicesManager,
+    extensionManager,
+    commandsManager,
+  } = props;
+
+  console.log("check1");
+
+  // const storePresentationState = useCallback(() => {
+  //   viewportGrid?.viewports.forEach(({ viewportId }) => {
+  //     commandsManager.runCommand('storePresentation', {
+  //       viewportId,
+  //     });
+  //   });
+  // }, [viewportGrid]);
+
+  console.log("check2");
+
+  const hydrateSEGDisplaySet = useCallback(
+    ({ segDisplaySet, viewportId }) => {
+      console.log("Inside hydrateSEGDisplaySet");
+      commandsManager.runCommand('loadSegmentationDisplaySetsForViewport', {
+        displaySets: [segDisplaySet],
+        viewportId,
+      });
+    },
+    [commandsManager]
+  );
+  console.log("check3");
+
+  const viewportId = viewportOptions.viewportId;
+  const segDisplaySet = displaySets[0];
+
+  const [isHydrated, setIsHydrated] = useState(segDisplaySet.isHydrated);
+
+  console.log("check4");
+
+  // useEffect(() => {
+  //   promptHydrateSEG({
+  //     servicesManager,
+  //     viewportId,
+  //     segDisplaySet,
+  //     preHydrateCallbacks: [storePresentationState],
+  //     hydrateSEGDisplaySet,
+  //   }).then(isHydrated => {
+  //     if (isHydrated) {
+  //       setIsHydrated(true);
+  //     }
+  //   });
+  // }, [servicesManager, viewportId, segDisplaySet, storePresentationState, hydrateSEGDisplaySet]);
+  // console.log("check5");
+
+  // Store props in this.props
+  // this.props = props;
+}
+
+prr.propTypes = {
+  displaySets: PropTypes.arrayOf(PropTypes.object),
+  viewportId: PropTypes.string.isRequired,
+  dataSource: PropTypes.object,
+  children: PropTypes.node,
+};
+
 class SegmentationService extends PubSubService {
+  // public props: withAppTypes;
   static REGISTRATION = {
     name: 'segmentationService',
     altName: 'SegmentationService',
@@ -1129,6 +1228,7 @@ class SegmentationService extends PubSubService {
   };
 
   public hydrateSegmentation = (segmentationId: string, suppressEvents = false): void => {
+    console.log("Inside hydrateSegmentation");
     const segmentation = this.getSegmentation(segmentationId);
 
     if (!segmentation) {
@@ -1892,16 +1992,133 @@ class SegmentationService extends PubSubService {
     );
   }
 
-  private _onSegmentationDataModified = evt => {
-    const { segmentationId } = evt.detail;
+  // private _onSegmentationDataModified = evt => {
+  //   const { segmentationId } = evt.detail;
 
+  //   const segmentation = this.getSegmentation(segmentationId);
+
+  //   if (segmentation === undefined) {
+  //     // Part of add operation, not update operation, exit early.
+  //     return;
+  //   }
+  //   this._broadcastEvent(this.EVENTS.SEGMENTATION_DATA_MODIFIED, {
+  //     segmentation,
+  //   });
+  // };
+
+
+  private _onSegmentationDataModified = evt => {
+
+    console.log("Inside _onSegmentationDataModified 21");
+    // const mockProps = {
+    //   children: "Sample children",
+    //   displaySets: [{ id: 1, name: 'DisplaySet1' }, { id: 2, name: 'DisplaySet2' }],
+    //   viewportId: "sampleViewportId",
+    //   dataSource: { data1: 'dataValue1', data2: 'dataValue2' },
+    // };
+
+
+    // prr(mockProps);
+    const { segmentationId } = evt.detail;
     const segmentation = this.getSegmentation(segmentationId);
+
+    const segmentationVolume = cache.getVolume(segmentationId);
+    console.log("segmentationVolume");
+    console.log(segmentationVolume);
+    console.log("FrameOfReferenceUID");
+    console.log(segmentationVolume['metadata']['FrameOfReferenceUID']);
+    console.log("scalar data");
+    console.log(segmentationVolume['scalarData']);
+
+    const cornerstoneViewportService = window.services.CornerstoneViewportService;
+    console.log("cornerstoneViewportService",cornerstoneViewportService);
+    const viewport = cornerstoneViewportService.getCornerstoneViewport('default');
+    console.log("viewport",viewport);
+    const imageId = viewport.getCurrentImageId();
+    console.log("ImageID",imageId);
+    const { SOPInstanceUID, frameNumber } = metadataProvider.getUIDsFromImageID(imageId);
+
+    let start = -1;
+    let end = -1;
+    
+    for (let i = 512*512; i < 512*512*2; i++) {
+      if (start === -1 && segmentationVolume['scalarData'][i] !== 0) {
+        start = i;
+      }
+      else if(segmentationVolume['scalarData'][i] !== 0){
+        end = i;
+      }
+    }
+
+    console.log(`Start: ${start}, End: ${end}`);
+
+    const userInput = prompt("want seg?:");
+
+    if (userInput === "yes" && start !== -1 && end !== -1) {
+      console.log("yes");
+
+      window.cornerstone.imageLoader.loadImage(imageId).then(image => {
+        // Access the pixel data
+        const pixelData = image.getPixelData();
+        console.log("ghhelppp", pixelData);
+
+        // Optional: Access other properties
+        console.log(`Columns: ${image.columns}`);
+        console.log(`Rows: ${image.rows}`);
+        console.log(`Bits Allocated: ${image.bitsAllocated}`);
+        console.log(`Modality: ${image.data.string('x00080060')}`);
+
+
+        const apiUrl = 'http://127.0.0.1:8000/predict/';
+        const requestData = {
+          pixelData: Array.from(pixelData),  // Example pixel data
+          segmentRequest: {
+            data: {
+              Seg: [[Math.floor(start / 512) - 512 * 1, start % 512], [Math.floor(end / 512) - 512 * 1, end % 512]],
+              SOP: SOPInstanceUID
+            }
+          }
+        };
+        axios.post(apiUrl, requestData, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then(response => {
+          console.log('Response from API:', response.data);
+          // Assuming you have width and height defined
+          const width1 = 512;
+          const height1 = 512;
+          const size1 = width1 * height1;
+          // Assuming segmentation_result is a flattened array from the API response
+          const segmentationResult = response.data['segmentation_result'];
+          // Convert segmentationResult to Uint8Array
+          const uint8Array_2 = new Uint8Array(segmentationResult);
+          // Create a new Uint8Array for the combined data
+          const new_data = new Uint8Array(size1 * 2);
+          // Assuming segmentationVolume['scalarData'] is your target array
+          segmentationVolume['scalarData'].set(new_data);
+        })
+        .catch(error => {
+          console.error('Error from API:', error);
+          // Handle error
+      });
+
+      }).catch(error => {
+        console.error('Error loading image:', error);
+      });
+
+    }
+
+    console.log("Success till here");
+
+
+
 
     if (segmentation === undefined) {
       // Part of add operation, not update operation, exit early.
       return;
     }
-
     this._broadcastEvent(this.EVENTS.SEGMENTATION_DATA_MODIFIED, {
       segmentation,
     });

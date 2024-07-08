@@ -6,6 +6,17 @@ import createSEGToolGroupAndAddTools from '../utils/initSEGToolGroup';
 import promptHydrateSEG from '../utils/promptHydrateSEG';
 import _getStatusComponent from './_getStatusComponent';
 
+import {
+  cache,
+  Enums as csEnums,
+  geometryLoader,
+  eventTarget,
+  getEnabledElementByIds,
+  utilities as csUtils,
+  volumeLoader,
+  StackViewport,
+} from '@cornerstonejs/core';
+
 const SEG_TOOLGROUP_BASE_NAME = 'SEGToolGroup';
 
 function OHIFCornerstoneSEGViewport(props: withAppTypes) {
@@ -78,14 +89,17 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
    * the image rendering, element enabling etc.
    */
   const onElementEnabled = evt => {
+    console.log("Inside  onElementEnabled");
     setElement(evt.detail.element);
   };
 
   const onElementDisabled = () => {
+    console.log("Inside  onElementDisabled");
     setElement(null);
   };
 
   const storePresentationState = useCallback(() => {
+    console.log("Inside  storePresentationState");
     viewportGrid?.viewports.forEach(({ viewportId }) => {
       commandsManager.runCommand('storePresentation', {
         viewportId,
@@ -94,11 +108,49 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
   }, [viewportGrid]);
 
   const getCornerstoneViewport = useCallback(() => {
+    console.log("Inside  getCornerstoneViewport");
     const { component: Component } = extensionManager.getModuleEntry(
       '@ohif/extension-cornerstone.viewportModule.cornerstone'
     );
 
     const { displaySet: referencedDisplaySet } = referencedDisplaySetRef.current;
+
+    console.log("Inside  getCornerstoneViewport referencedDisplaySet",referencedDisplaySet);
+    console.log("Inside  getCornerstoneViewport referencedDisplaySet displaySetInstanceUID",referencedDisplaySet['displaySetInstanceUID']);
+    
+    const segmentationId = referencedDisplaySet['displaySetInstanceUID'];
+    console.log("Inside  getCornerstoneViewport segmentationId",segmentationId);
+
+    const segmentationVolume = cache.getVolume(segmentationId);
+    console.log("Inside  getCornerstoneViewport segmentationVolume",segmentationVolume);
+
+    if(segmentationVolume!==undefined){
+      console.log("segmentationVolume");
+      console.log(segmentationVolume);
+      if(segmentationVolume['metadata']!==undefined){
+        console.log("FrameOfReferenceUID");
+        console.log(segmentationVolume['metadata']['FrameOfReferenceUID']);
+        console.log("scalar data");
+        console.log(segmentationVolume['scalarData']);
+
+      }
+
+    }
+
+    console.log("Inside  getCornerstoneViewport segDisplaySet",segDisplaySet);
+
+    // if(segDisplaySet['labelmapBufferArray']!==undefined){
+    //   console.log("labelmapBufferArray0",segDisplaySet['labelmapBufferArray'][0]);
+    //   for(let i=0;i<786432;i++){
+    //     if(segDisplaySet['labelmapBufferArray'][0][0]!==undefined){
+    //       console.log(segDisplaySet['labelmapBufferArray'][0][i]);
+    //     }
+    //     else{
+    //       console.log("Its undefined");
+    //       break;
+    //     }
+    //   }
+    // }
 
     // Todo: jump to the center of the first segment
     return (
@@ -122,6 +174,7 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
 
   const onSegmentChange = useCallback(
     direction => {
+      console.log("Inside  onSegmentChange");
       const segmentationId = segDisplaySet.displaySetInstanceUID;
       const segmentation = segmentationService.getSegmentation(segmentationId);
 
@@ -146,9 +199,28 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
   );
 
   useEffect(() => {
+    console.log("Inside useEffect with promptHydrateSEG");
+    console.log("segDisplaySet",segDisplaySet);
+    console.log("labelmapBufferArray",segDisplaySet['labelmapBufferArray']);
+    if(segDisplaySet['labelmapBufferArray']!==undefined){
+      console.log("labelmapBufferArray0",segDisplaySet['labelmapBufferArray'][0]);
+      // for(let i=0;i<786432;i++){
+      // segDisplaySet['labelmapBufferArray'][0][i]=1;
+      // }
+    }
+
+    // console.log("labelmapBufferArray0",segDisplaySet['labelmapBufferArray'][0]);
+    // let counter = 0;
+    // for(let i=0;i<786432;i++){
+    //   segDisplaySet['labelmapBufferArray'][0][i]=1;
+    // }
+    // console.log("labelmapBufferArray0 updated",segDisplaySet['labelmapBufferArray'][0]);
+    console.log("segIsLoading",segIsLoading);
+
     if (segIsLoading) {
       return;
     }
+    console.log("Inside useEffect with promptHydrateSEG2");
 
     promptHydrateSEG({
       servicesManager,
@@ -164,6 +236,8 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
   }, [servicesManager, viewportId, segDisplaySet, segIsLoading]);
 
   useEffect(() => {
+    console.log("Inside  useEffect setSegIsLoading");
+    console.log("useEffect segDisplaySet",segDisplaySet);
     const { unsubscribe } = segmentationService.subscribe(
       segmentationService.EVENTS.SEGMENTATION_LOADING_COMPLETE,
       evt => {
@@ -179,6 +253,7 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
   }, [segDisplaySet]);
 
   useEffect(() => {
+    console.log("Inside  useEffect setProcessingProgress");
     const { unsubscribe } = segmentationService.subscribe(
       segmentationService.EVENTS.SEGMENT_LOADING_COMPLETE,
       ({ percentComplete, numSegments }) => {
@@ -198,6 +273,7 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
    Cleanup the SEG viewport when the viewport is destroyed
    */
   useEffect(() => {
+    console.log("Inside  useEffect Cleanup");
     const onDisplaySetsRemovedSubscription = displaySetService.subscribe(
       displaySetService.EVENTS.DISPLAY_SETS_REMOVED,
       ({ displaySetInstanceUIDs }) => {
@@ -217,6 +293,7 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
   }, []);
 
   useEffect(() => {
+    console.log("Inside  useEffect createSEGToolGroupAndAddTools");
     let toolGroup = toolGroupService.getToolGroup(toolGroupId);
 
     if (toolGroup) {
@@ -237,6 +314,7 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
   }, []);
 
   useEffect(() => {
+    console.log("Inside  useEffect of setIsHydrated");
     setIsHydrated(segDisplaySet.isHydrated);
 
     return () => {
@@ -248,6 +326,11 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
 
   const hydrateSEGDisplaySet = useCallback(
     ({ segDisplaySet, viewportId }) => {
+      console.log("Inside hydrateSEGDisplaySet");
+      // for(let i=0;i<512*512*3;i++){
+      //   console.log(segDisplaySet['labelmapBufferArray'][0][i]);
+      //     // segDisplaySet['labelmapBufferArray'][0][i]=1;
+      // }
       commandsManager.runCommand('loadSegmentationDisplaySetsForViewport', {
         displaySets: [segDisplaySet],
         viewportId,
@@ -257,6 +340,7 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
   );
 
   const onStatusClick = useCallback(async () => {
+    console.log("Inside onStatusClick");
     // Before hydrating a SEG and make it added to all viewports in the grid
     // that share the same frameOfReferenceUID, we need to store the viewport grid
     // presentation state, so that we can restore it after hydrating the SEG. This is
@@ -273,6 +357,7 @@ function OHIFCornerstoneSEGViewport(props: withAppTypes) {
   }, [hydrateSEGDisplaySet, segDisplaySet, storePresentationState, viewportId]);
 
   useEffect(() => {
+    console.log("Inside  useEffect _getStatusComponent");
     viewportActionCornersService.setComponents([
       {
         viewportId,
@@ -370,17 +455,25 @@ OHIFCornerstoneSEGViewport.propTypes = {
 };
 
 function _getReferencedDisplaySetMetadata(referencedDisplaySet, segDisplaySet) {
+  console.log("Inside  _getReferencedDisplaySetMetadata");
   const { SharedFunctionalGroupsSequence } = segDisplaySet.instance;
+  console.log("SharedFunctionalGroupsSequence",SharedFunctionalGroupsSequence);
 
   const SharedFunctionalGroup = Array.isArray(SharedFunctionalGroupsSequence)
     ? SharedFunctionalGroupsSequence[0]
     : SharedFunctionalGroupsSequence;
 
+  console.log("SharedFunctionalGroup",SharedFunctionalGroup);  
+
   const { PixelMeasuresSequence } = SharedFunctionalGroup;
+
+  console.log("PixelMeasuresSequence",PixelMeasuresSequence); 
 
   const PixelMeasures = Array.isArray(PixelMeasuresSequence)
     ? PixelMeasuresSequence[0]
     : PixelMeasuresSequence;
+
+  console.log("PixelMeasures",PixelMeasures);   
 
   const { SpacingBetweenSlices, SliceThickness } = PixelMeasures;
 
@@ -398,6 +491,7 @@ function _getReferencedDisplaySetMetadata(referencedDisplaySet, segDisplaySet) {
     ManufacturerModelName: image0.ManufacturerModelName,
     SpacingBetweenSlices: image0.SpacingBetweenSlices || SpacingBetweenSlices,
   };
+  console.log("referencedDisplaySetMetadata",referencedDisplaySetMetadata);
 
   return referencedDisplaySetMetadata;
 }

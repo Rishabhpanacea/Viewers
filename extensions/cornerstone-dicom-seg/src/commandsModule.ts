@@ -134,6 +134,7 @@ const commandsModule = ({
      *
      */
     loadSegmentationsForViewport: async ({ segmentations, viewportId }) => {
+      console.log("Inside loadSegmentationsForViewport");
       updateViewportsForSegmentationRendering({
         viewportId,
         servicesManager,
@@ -206,6 +207,7 @@ const commandsModule = ({
      *
      */
     loadSegmentationDisplaySetsForViewport: async ({ viewportId, displaySets }) => {
+      console.log("Inside loadSegmentationDisplaySetsForViewport");
       // Todo: handle adding more than one segmentation
       const displaySet = displaySets[0];
       const referencedDisplaySet = displaySetService.getDisplaySetByUID(
@@ -315,6 +317,7 @@ const commandsModule = ({
      *
      */
     downloadSegmentation: ({ segmentationId }) => {
+      console.log("segmentationId",segmentationId);
       const segmentationInOHIF = segmentationService.getSegmentation(segmentationId);
       const generatedSegmentation = actions.generateSegmentation({
         segmentationId,

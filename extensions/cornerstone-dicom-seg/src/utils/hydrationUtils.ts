@@ -28,14 +28,22 @@ async function updateViewportsForSegmentationRendering({
   displaySet?: any;
   initialSliceIndex?: number;
 }) {
+  console.log("Inside updateViewportsForSegmentationRendering");
   const { cornerstoneViewportService, segmentationService, viewportGridService } =
     servicesManager.services;
 
   const viewport = getTargetViewport({ viewportId, viewportGridService });
+
+  console.log("viewport",viewport);
+
   const targetViewportId = viewport.viewportOptions.viewportId;
+  console.log("targetViewportId",targetViewportId);
 
   const referencedDisplaySetInstanceUID =
     displaySet?.referencedDisplaySetInstanceUID || viewport?.displaySetInstanceUIDs[0];
+
+  
+  console.log("referencedDisplaySetInstanceUID",referencedDisplaySetInstanceUID);  
 
   const updatedViewports = getUpdatedViewportsForSegmentation({
     viewportId,
@@ -43,10 +51,14 @@ async function updateViewportsForSegmentationRendering({
     displaySet,
   });
 
+  console.log("updatedViewports",updatedViewports); 
+
   // create Segmentation callback which needs to be waited until
   // the volume is created (if coming from stack)
   const createSegmentationForVolume = async () => {
+    console.log("Inside createSegmentationForVolume");
     const segmentationId = await loadFn();
+    console.log("createSegmentationForVolume segmentationId",segmentationId);
     segmentationService.hydrateSegmentation(segmentationId);
   };
 
@@ -57,6 +69,7 @@ async function updateViewportsForSegmentationRendering({
   );
 
   updatedViewports.forEach(async viewport => {
+    console.log("Inside updatedViewports");
     viewport.viewportOptions = {
       ...viewport.viewportOptions,
       viewportType: displaySet?.Modality === 'RTSTRUCT' ? 'stack' : 'volume',
@@ -83,6 +96,7 @@ async function updateViewportsForSegmentationRendering({
     }
 
     const createNewSegmentationWhenVolumeMounts = async evt => {
+      console.log("Inside createNewSegmentationWhenVolumeMounts");
       const isTheActiveViewportVolumeMounted = evt.detail.volumeActors?.find(ac =>
         ac.uid.includes(referencedDisplaySetInstanceUID)
       );
@@ -121,6 +135,7 @@ async function updateViewportsForSegmentationRendering({
 }
 
 const getTargetViewport = ({ viewportId, viewportGridService }) => {
+  console.log("Inside getTargetViewport");
   const { viewports, activeViewportId } = viewportGridService.getState();
   const targetViewportId = viewportId || activeViewportId;
 
@@ -146,6 +161,7 @@ function getUpdatedViewportsForSegmentation({
   servicesManager,
   displaySet,
 }: withAppTypes) {
+  console.log("Inside getUpdatedViewportsForSegmentation");
   const { hangingProtocolService, displaySetService, segmentationService, viewportGridService } =
     servicesManager.services;
 
@@ -160,13 +176,18 @@ function getUpdatedViewportsForSegmentation({
     displaySet?.referencedDisplaySetInstanceUID || displaySetInstanceUIDs[0];
 
   const referencedDisplaySet = displaySetService.getDisplaySetByUID(referenceDisplaySetInstanceUID);
+  console.log("referencedDisplaySet",referencedDisplaySet);
+
   const segmentationFrameOfReferenceUID = referencedDisplaySet.instances[0].FrameOfReferenceUID;
+  console.log("segmentationFrameOfReferenceUID",segmentationFrameOfReferenceUID);
 
   const updatedViewports = hangingProtocolService.getViewportsRequireUpdate(
     targetViewportId,
     referenceDisplaySetInstanceUID,
     isHangingProtocolLayout
   );
+
+  console.log("updatedViewports",updatedViewports);
 
   viewports.forEach((viewport, viewportId) => {
     if (
